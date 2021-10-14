@@ -1,0 +1,734 @@
+
+{% load static  %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="apple-touch-icon" sizes="76x76" href="{% static '/assets/img//apple-icon.png'%}">
+  <link rel="icon" type="image/png" href="{% static '/assets/img//favicon.png'%}">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>
+    BirdWatchers
+  </title>
+  <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
+  <!--     Fonts and icons     -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet" />
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
+  <!-- CSS Files -->
+  <link href="{% static '/assets/css/bootstrap.min.css' %}" rel="stylesheet" />
+  <link href="{% static '/assets/css/paper-kit.css'%}" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css" />
+  <link href="{% static '/assets/css/hariom_edited.css'%}" rel="stylesheet" />
+
+
+</head>
+
+<style>
+.borderless td, .borderless th {
+    border: none;
+}
+#search_input {
+  background-position: 10px 12px; /* Position the search icon */
+  background-repeat: no-repeat; /* Do not repeat the icon image */
+  width: 100%; /* Full-width */
+  font-size: 16px; /* Increase font-size */
+  padding: 12px 20px 12px 40px; /* Add some padding */
+  border: 1px solid #ddd; /* Add a grey border */
+  margin-bottom: 12px; /* Add some space below the input */
+}
+
+.fetched_results {
+  /* Remove default list styling */
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.fetched_results li a {
+  border: 1px solid #ddd; /* Add a border to all links */
+  margin-top: -1px; /* Prevent double borders */
+  background-color: #f6f6f6; /* Grey background color */
+  padding: 12px; /* Add some padding */
+  text-decoration: none; /* Remove default text underline */
+  font-size: 18px; /* Increase the font-size */
+  color: black; /* Add a black text color */
+  display: block; /* Make it into a block element to fill the whole list */
+}
+
+.fetched_results li a:hover:not(.header) {
+  background-color: #eee; /* Add a hover effect to all links, except for headers */
+}
+</style>
+
+
+<body class="index-page sidebar-collapse">
+  <div class="section">
+    <div class="container">
+    
+      <form id = "create_alert_form">
+
+        <div class="form-group col-md-4">
+          <label >Name</label>
+          <input class="form-control" type="text" id="alert_name" name="alert_name" value="{{alert_details.name}}" >
+          <input type="hidden" name="alert_id" id="alert_id" value="{{alert_details.id}}">
+        </div>
+
+        <div class="form-group col-md-4">
+          <label >Candle</label>
+          <select class="form-control" name="selected_candle">
+            {% for candle in candles %}
+              {% if alert_details.candle == candle  %}
+                <option value = "{{candle.id}}" selected>{{candle.name}}</option>
+              {% else %}
+                <option value = "{{candle.id}}">{{candle.name}}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group col-md-6">
+        <table class="table borderless">
+          <thead>
+            <tr>
+              <th scope="col"><h4>Indicators</h4></th>
+              <th colspan="2"><a class="btn btn-outline-primary btn-sm" id ="search_indicator_btn" data-toggle="modal" data-target="#search_indicator_modal">Add</a></th>
+            </tr>
+          </thead>
+          <tbody id ="indicators_table">
+            {% for ind_log in alert_details.indicator_log.all %}
+              <tr>
+                <td id="indicator_display_line_{{ind_log.id}}">{{ind_log.display_line}}</td>
+                <td><a  href="#" class="btn btn-outline-primary btn-just-icon line_settings" data-toggle="modal" data-target="#indicator_properties_modal"><i class="fa fa-cog" style="color:black"></i></a><input type="hidden" value="{{ind_log.id}}"></td>
+                <td><a  href="#" class="btn btn-outline-danger btn-just-icon delete_ind_btn"><i class="fa fa-trash" style="color:red"></i></a><input type="hidden" name="indicator_log_id" value="{{ind_log.id}}"></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+        <br>
+        <br>       
+        <div class="condition_main">
+          <div id="create_alert_condition" class="form-group">
+            <p><span>Send Alert when</span>&nbsp
+            {% comment %} first condition begins {% endcomment %}
+            <div id="condition1_div">
+              {% comment %} line 1 {% endcomment %}
+              <select id="selected_line1" name="selected_line1">
+                {% for line in display_lines  %}
+                  {% if line == alert_conditions.0.0  %}
+                    <option value={{line}} selected>{{line}}</option>
+                  {% else %}
+                    <option value={{line}}>{{line}}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>&nbsp
+              <span><b>is</b></span>&nbsp
+              {% comment %} cond 1 {% endcomment %}
+              <select id="selected_condition1" name="selected_condition1">
+                {% for cond_val,cond_name in condition_type.items  %}
+                  {% if cond_val == alert_conditions.0.1  %}
+                    <option value={{cond_val}} selected>{{cond_name}}</option>
+                  {% else %}
+                    <option value={{cond_val}}>{{cond_name}}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>&nbsp
+              {% comment %} line2 {% endcomment %}
+              <select id="selected_line2" name="selected_line2">
+                {% for line in display_lines  %}
+                  {% if line == alert_conditions.0.2  %}
+                    <option value={{line}} selected>{{line}}</option>
+                  {% else %}
+                    <option value={{line}}>{{line}}</option>
+                  {% endif %}
+                {% endfor %}
+                {% if "value" == alert_conditions.0.2 %}
+                  <option name="value1" value="value" selected>Value</option>
+                {% endif %}
+              </select>&nbsp
+              {% if 'value' == alert_conditions.0.2 %}
+                <input type="number" placeholder="value" step="0.01" id="selected_value" name="selected_value" value={{alert_conditions.0.3}}>
+              {% endif %}
+            </div>
+            <br>
+
+
+            
+            {% comment %} second condition begins {% endcomment %}
+            {% if alert_conditions|length > 1 %}
+              <div id="condition2_div">
+                <p><span>And <a href="#" id="remove_condition2_btn" ><i class="fa fa-minus" style="color:red"></i></a></span>&nbsp
+                </p>
+                <select id="selected_line3" name="selected_line3">
+                  {% for line in display_lines  %}
+                    {% if line == alert_conditions.1.0  %}
+                      <option value={{line}} selected>{{line}}</option>
+                    {% else %}
+                      <option value={{line}}>{{line}}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>&nbsp
+                <span><b>is</b></span>&nbsp
+                <select id="selected_condition2" name ="selected_condition2">
+                  {% for cond_val,cond_name in condition_type.items  %}
+                    {% if cond_val == alert_conditions.1.1  %}
+                      <option value={{cond_val}} selected>{{cond_name}}</option>
+                    {% else %}
+                      <option value={{cond_val}}>{{cond_name}}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>&nbsp
+
+                <select id="selected_line4" name="selected_line4">
+                  {% for line in display_lines  %}
+                    {% if line == alert_conditions.1.2  %}
+                      <option value={{line}} selected>{{line}}</option>
+                    {% else %}
+                      <option value={{line}}>{{line}}</option>
+                    {% endif %}
+                  {% endfor %}
+                  
+                  {% if 'value' == alert_conditions.1.2 %}
+                    <option name="value2" value="value" selected>Value</option>
+                  {% endif %}
+                </select>&nbsp
+                {% if 'value' == alert_conditions.1.2 %}
+                <input type="number" placeholder="value" step="0.01" id="selected_value2" name="selected_value2" value={{alert_conditions.1.3}}>
+              {% endif %}
+              </div>
+              <button id ="add_condition2_btn" type="button" class="btn btn-outline-success btn-sm" style="display: none;">And</button>
+            {% else %}
+              <div id="condition2_div" style="display: none;">
+                <p><span>And <a href="#" id="remove_condition2_btn" ><i class="fa fa-minus" style="color:red"></i></a></span>&nbsp
+                </p>
+                <select id="selected_line3" name="selected_line3">
+                  {% for line in display_lines  %}
+                    <option value={{line}}>{{line}}</option>
+                  {% endfor %}
+                </select>&nbsp
+                <span><b>is</b></span>&nbsp
+                <select id="selected_condition2" name ="selected_condition2">
+                  {% for cond_val,cond_name in condition_type.items  %}  
+                    <option value={{cond_val}}>{{cond_name}}</option>
+                  {% endfor %}
+                  <option name="value2" value="value">Value</option>
+                </select>&nbsp
+
+                <select id="selected_line4" name="selected_line4">
+                  {% for line in display_lines  %}
+                    <option value={{line}}>{{line}}</option>
+                  {% endfor %}
+                </select>&nbsp
+              </div>
+              <button id ="add_condition2_btn" type="button" class="btn btn-outline-success btn-sm">And</button>
+            {% endif %}
+          </div>
+          </p>
+        </div>
+        <br><br>
+        <div class="form-group col-md-6">
+          <label>Apply on</label><br/>
+          {% comment %} <select id ="watchlist_select" name ="watchlist_select"  class="form-control" multiple>  {% endcomment %}
+          <select id ="watchlist_select" name ="watchlist_select"  class="form-control selectpicker" data-live-search="true" data-actions-box="true" title="WatchList" data-width="65%" multiple> 
+            {% for instrument in user_profile.watchlist.all  %}
+              {% if instrument in alert_details.applied_on.all %}
+                <option value="{{instrument.id}}" selected>{{instrument.name}}</option>
+              {% else %}
+                <option value="{{instrument.id}}">{{instrument.name}}</option>
+              {% endif %}
+              
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group col-md-6">
+          <label>Message</label><br/>
+          <textarea class="form-control" id="alert_message" name="alert_message" rows="4" readonly > {{alert_details.message}}</textarea> 
+        </div>
+        <div class="form-group col-md-4">
+          <button type="submit" class="form-control"> Save </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+{% comment %} modal for settings {% endcomment %}
+<div class="modal fade" id="indicator_properties_modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+        <h5 class="modal-title text-center" >Inputs</h5>
+      </div>
+      <div class="modal-body">
+        <form id="indicator_properties_form">
+          
+        </form>
+      </div>
+      <div class="modal-footer">
+        <div class="left-side">
+          <button type="button" class="btn btn-default btn-link" id="line_settings_modal_close_btn" data-dismiss="modal">Never mind</button>
+        </div>
+        <div class="divider"></div>
+        <div class="right-side">
+          <button type="button" id="line_settings_modal_save_btn" class="btn btn-danger btn-link">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% comment %} modal for search {% endcomment %}
+<div class="modal fade" id="search_indicator_modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <input type="text" autocomplete="off" id="search_input"  placeholder="Search">
+          {% comment %} <input class="form-control" type="text" placeholder="Search"aria-label="Search">  {% endcomment %}
+        <ul class = "fetched_results" id="fetched_indicators">
+
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--   Core JS Files   -->
+<script src="{% static '/assets/js/core/jquery.min.js'%}" type="text/javascript"></script>
+<script src="{% static '/assets/js/core/popper.min.js'%}" type="text/javascript"></script>
+<script src="{% static '/assets/js/core/bootstrap.min.js'%}" type="text/javascript"></script>
+<!--  Plugin for Switches, full documentation here: http://www.jque.re/plugins/version3/bootstrap.switch/ -->
+<script src="{% static '/assets/js/plugins/bootstrap-switch.js'%}"></script>
+<!--  Plugin for the Sliders, full documentation here: http://refreshless.com/nouislider/ -->
+<script src="{% static '/assets/js/plugins/nouislider.min.js'%}" type="text/javascript"></script>
+<!--  Plugin for the DatePicker, full documentation here: https://github.com/uxsolutions/bootstrap-datepicker -->
+<script src="{% static '/assets/js/plugins/moment.min.js'%}"></script>
+<script src="{% static '/assets/js/plugins/bootstrap-datepicker.js'%}" type="text/javascript"></script>
+<!-- Control Center for Paper Kit: parallax effects, scripts for the example pages etc -->
+<script src="{% static '/assets/js/paper-kit.js' %}" type="text/javascript"></script>
+{% comment %} <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script> {% endcomment %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+
+    // for date picker soon 'll be replaced
+    $('#watchlist_select').selectpicker();
+    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
+        $('.selectpicker').selectpicker('mobile');
+    }
+
+    if ($("#datetimepicker").length != 0) {
+      $('#datetimepicker').datetimepicker({
+        icons: {
+          time: "fa fa-clock-o",
+          date: "fa fa-calendar",
+          up: "fa fa-chevron-up",
+          down: "fa fa-chevron-down",
+          previous: 'fa fa-chevron-left',
+          next: 'fa fa-chevron-right',
+          today: 'fa fa-screenshot',
+          clear: 'fa fa-trash',
+          close: 'fa fa-remove'
+        }
+      });
+    }
+
+    function scrollToDownload() {
+      if ($('.section-download').length != 0) {
+        $("html, body").animate({
+          scrollTop: $('.section-download').offset().top
+        }, 1000);
+      }
+    }
+
+    //Actual Code
+    //var condition = JSON.parse("{{alert_details.conditions_json}}");
+
+    // 
+    function get_available_lines(callback=0){
+      $.ajax({
+        url : '/get_available_lines/',
+        type: "POST",
+        data :  $("#create_alert_form").serialize(),
+        timeout: 600000,
+      }).done(function(response){
+          if(response["status"] == "success"){
+            if (callback){
+              callback(response["lines"]);
+            }
+          }else{
+            if (callback){
+              callback([]);
+            }
+          }
+      });
+    }
+    function condition_on_startup(){
+      var alert_id = $('#alert_id').val();
+      $.ajax({
+        url : '/get_alert_conditions/',
+        type: "POST",
+        data : {"alert_id":alert_id},
+        timeout: 600000,
+      }).done(function(response){
+        if(response["status"] == "success"){
+          var conditions = response["conditions"]
+          conditions.forEach(function myFunction(value, index, array) {
+            console.log(value[0]);
+            //$("#selected_line1 select").val(value[0]);
+            //$("#selected_line1 select").val(value[0]).change();
+          });
+        }
+      });
+    }
+
+    //handles all the select line dropdowns
+    function update_dropdowns_callback(available_lines){
+      if(available_lines.length){
+        var already_exists = $.map($('#selected_line2 option'), function(e) { return e.value; });
+        //console.log(already_exists);
+        //list of options to be added
+        var to_be_added = available_lines.filter(function(obj) { return already_exists.indexOf(obj) == -1; });
+        //list of options to be removed
+        var to_be_removed = already_exists.filter(function(obj) { return available_lines.indexOf(obj) == -1; });
+
+        var selected_line2_val = $('#selected_line2').val()
+        var selected_line4_val = $('#selected_line4').val()
+        console.log(to_be_removed);
+        // add the options
+        to_be_added.forEach(function myFunction(value, index, array) {
+          //for (var i = 0; i < available_lines.length; i++) {
+          //var value = available_lines[i];
+          // value remains the same as coded line only display part changes if line is codded
+          var to_append = '<option value="'+value+'">';
+          to_append += value;
+          to_append += '</option>';
+          $('#selected_line1').append(to_append);
+          $('#selected_line2').append(to_append);
+          $('#selected_line3').append(to_append);
+          $('#selected_line4').append(to_append);
+        });
+        // remove the options
+        to_be_removed.forEach(function myFunction(value, index, array) {
+          $("#selected_line1 option[value='"+value+"']").remove();
+          if( !(selected_line2_val == "value" && value == "value") ){
+            $("#selected_line2 option[value='"+value+"']").remove();
+          }
+          $("#selected_line3 option[value='"+value+"']").remove();
+          if( !(selected_line4_val == "value" && value == "value") ){
+            $("#selected_line4 option[value='"+value+"']").remove();
+          }
+        });
+        // always append Value part to line 2 and 4
+        var to_append = '<option name="value1" value="value">Value</option>';
+        if( !(selected_line2_val == "value") ){
+          $('#selected_line2').append(to_append);
+        }
+        var to_append = '<option name="value2" value="value">Value</option>';
+        if( !(selected_line4_val == "value") ){
+          $('#selected_line4').append(to_append);
+        }
+      }
+    }
+
+    function update_dropdowns(callback=null){
+      // add the options
+      get_available_lines(update_dropdowns_callback);
+      if (callback){
+        callback();
+      }
+    }
+
+
+
+    function update_alert_message(){
+      
+      var message = $('#alert_name').val()+"\n {stock} of {candle} \n "
+      if(($('#selected_line1').val() !="select") && ($('#selected_condition1').val() !='') && ($('#selected_line2').val() !="select") ){
+        message += $('#selected_line1').val();
+        message += " is "+$('#selected_condition1').find("option:selected").text();
+        if($('#selected_line2').val() == "value"){
+          message += " "+($('#selected_value').val()? $('#selected_value').val():0 );
+        }else{
+          message += " "+$('#selected_line2').val();
+        }
+      }
+      if(($('#selected_line3').val() !="select") && ($('#selected_condition2').val() !='') && ($('#selected_line4').val() !="select") ){
+        message += " AND ";
+        message += " "+$('#selected_line3').val();
+        message += " "+$('#selected_condition2').find("option:selected").text();
+        if($('#selected_line4').val() == "value"){
+          message += " "+($('#selected_value2').val()? $('#selected_value2').val():0 );
+        }else{
+          message += " "+$('#selected_line4').val();
+        } 
+      }
+      $('#alert_message').text(message);
+    }
+
+    
+    $("#selected_line1,#selected_line2,#selected_line3,#selected_line4,#selected_condition1,#selected_condition2,#alert_name").on("change",function(){
+      update_alert_message();
+    });
+
+    $("#condition1_div").on("change","#selected_value",function(){
+      update_alert_message();
+    });
+    $("#condition2_div").on("change","#selected_value2",function(){
+      update_alert_message();
+    });
+
+
+
+    // for condition 1 on alerts deals with only value -> input number vala part  
+    $("#selected_line2").on("change",function(){
+      // if value selected display the input box
+      if($("#selected_line2").val() == "value"){
+        var to_append = '<input type="number" placeholder="value" step="0.01" id="selected_value" name="selected_value">'
+        $("#condition1_div").append(to_append);
+      }else{
+        if($("#selected_value").length){
+          $("#selected_value").last().remove();
+        }
+      }
+    });
+
+    // for condition 2 on alerts deals with only value -> input number vala part
+    $("#selected_line4").on("change",function(){
+      // if value selected display the input box
+      if($("#selected_line4").val() == "value"){
+        var to_append = '<input type="number" placeholder="value" step="0.01" id="selected_value2" name="selected_value2" >'
+        $("#condition2_div").append(to_append);
+      }else{
+        if($("#selected_value2").length){
+          $("#selected_value2").last().remove();
+        }
+      }
+    });
+
+    // add button for showing second condition
+    $("#add_condition2_btn").on("click",function(){
+      // show second condition inputs
+      $("#condition2_div").show();
+      // hide the add btn
+      $("#add_condition2_btn").hide();
+    });
+
+    // remove button for showing second condition
+    $("#remove_condition2_btn").on("click",function(){
+      //remove values
+      if($("#selected_value2").length){
+        $("#selected_value2").last().remove();
+      }
+      // select default of all select line dropdown
+      $('#condition2_div').find('select').prop('selectedIndex',0);
+      // hide the condition
+      $("#condition2_div").hide();
+      // show add btn to add 2nd condition
+      $("#add_condition2_btn").show();
+    });
+    // add btn on indicators table to search and add
+    $('#search_indicator_btn').on('click', function() {
+      //clear all the previous inputs
+      $('#fetched_indicators').empty();
+      $('#search_input').val('');
+    });
+    
+    // when indicator is searched  
+    $( "#search_input" ).keyup(function() {
+      var search_term = $( "#search_input" ).val()
+      // make ajax req on every 2 consecutive letters to prevents server req abbuse (not sure if it works)
+      if ((search_term.length % 2) == 0){
+        // make post req and get all the available indicators
+        $.ajax({
+          url : '/search_indicator/',
+          type: "POST",
+          data : {"search_term":search_term},
+          timeout: 600000,
+        }).done(function(response){
+            //remove previous inputs
+            $('#fetched_indicators').empty();
+            if(response["status"] == "success"){
+              fetchecd_data = JSON.parse(response['data']);
+              //console.log(fetchecd_data["fields"])
+              fetchecd_data.forEach(function (item, index) {
+                //console.log(item)
+                //display the indicators detail
+                $( "#fetched_indicators" ).append('<li><a href="#" class="res" >'+item["fields"]["long_name"]+'</a> <input type= "hidden" value='+item["pk"]+'></li>');
+              });
+            }
+            //console.log(response)
+        });
+      } 
+    });
+
+    // when an element from fetched indicators is clicked
+    $('#fetched_indicators').on('click', '.res', function() {
+      // id if indicator that was clicked
+      var indicator_id = $(this).next().val();
+      // get details of this indicator
+      $.ajax({
+        url : '/create_indicator_log/',
+        type: "POST",
+        data : {"indicator_id":indicator_id},
+        timeout: 600000,
+      }).done(function(response){
+          console.log(response)
+          if(response["status"] == "success"){
+            var indicator_log_id = response['indicator_log_id']
+            var indicator_display_line = response['indicator_display_line']
+            var to_append = '<tr>';
+            to_append +='<td id="indicator_display_line_'+indicator_log_id+'">'+indicator_display_line+'</td>';
+            to_append +='<td><a  href="#" class="btn btn-outline-primary btn-just-icon line_settings" data-toggle="modal" data-target="#indicator_properties_modal"><i class="fa fa-cog" style="color:black"></i></a><input type="hidden" value="'+indicator_log_id+'"></td>';
+            to_append +='<td><a  href="#" class="btn btn-outline-danger btn-just-icon delete_ind_btn"><i class="fa fa-trash" style="color:red"></i></a><input type="hidden" name="indicator_log_id" value="'+indicator_log_id+'"></td>';
+            to_append +='</tr>';
+            $( "#indicators_table" ).append(to_append);
+          }else{
+            //console.log(response)
+          }
+        update_dropdowns();
+      });
+    });
+
+    // delete indicator line from table
+    $('#indicators_table').on('click','.delete_ind_btn', function() {
+      var whichtr = $(this).closest("tr");
+      var indicator_log_id =$(this).next().val();
+       $.ajax({
+        url : '/delete_indicator_log/',
+        type: "POST",
+        data : {"indicator_log_id":indicator_log_id},
+        timeout: 600000,
+      }).done(function(response){
+        if(response["status"] == "success"){
+          whichtr.remove();
+          update_dropdowns();
+        }
+      });
+    });
+
+    // when indicator line settings modal opens
+    $('#indicators_table').on('click','.line_settings', function() {
+      //alert('hi');
+      var indicator_log_id = $(this).next().val();
+      $.ajax({
+        url : '/get_indicator_log/',
+        type: "POST",
+        data : {"indicator_log_id":indicator_log_id},
+        timeout: 600000,
+      }).done(function(response){
+          if(response["status"] == "success"){
+            //console.log(JSON.parse(response['indicator_log_values']));
+            var indicator_input_values = JSON.parse(response['indicator_log_values'])
+            $('#indicator_properties_form').empty();
+            for (const [key, value] of Object.entries(indicator_input_values)) {
+              console.log(key, value);
+              if(key=="source"){
+                console.log("source dropdown should be displayed")
+                get_available_lines(function(available_lines){
+                  var to_append = '<div class="form-group row">';
+                  to_append +='    <label for="indicator_line_setting_length" class="col-sm-2 col-form-label"> '+key+'</label>';
+                  to_append +='   <div class="col-sm-10">';
+                  to_append +='      <select  class="form-control" name= "'+key+'">';
+                  
+                  //for (var i = 1; i < available_lines.length; i++) {
+                  for (var i = 1; i < 5; i++) {
+                    temp_line = available_lines[i];
+                    var selected = '';
+                    if(temp_line == value){
+                      selected = 'selected';
+                    }
+                    to_append += '<option value="'+temp_line+'" '+selected+'>';
+                    to_append += temp_line;
+                    to_append += '</option>';
+                  }
+                  
+                  to_append +='   </select>';
+                  to_append +='   </div>';
+                  to_append +='  </div>';
+                  $('#indicator_properties_form').append(to_append);
+                });
+              }else{
+                var to_append = '<div class="form-group row">';
+                to_append +='    <label for="indicator_line_setting_length" class="col-sm-2 col-form-label"> '+key+'</label>';
+                to_append +='   <div class="col-sm-10">';
+                to_append +='      <input type="number" class="form-control" name= "'+key+'"" value="'+value+'">';
+                to_append +='   </div>';
+                to_append +='  </div>';
+                $('#indicator_properties_form').append(to_append);
+              }
+            }
+            var to_append = '<input type="hidden" name="indicator_log_id" value="'+indicator_log_id+'">';
+            $('#indicator_properties_form').append(to_append);
+            update_dropdowns();
+          }else{
+            console.log(response);
+          }
+      });
+      
+    });
+
+    // when save button on settings modal is clicked
+    $('#line_settings_modal_save_btn').on('click', function() {
+      //alert('hi');
+      //var form_data = $("#indicator_properties_form").serializeArray();
+      //console.log(form_data);
+      $.ajax({
+        url : '/update_indicator_log/',
+        type: "POST",
+        data : $("#indicator_properties_form").serialize(),
+        timeout: 600000,
+      }).done(function(response){
+          if(response["status"] == "success"){
+            var indicator_display_line = response['indicator_display_line'];
+            var indicator_log_id = response['indicator_log_id'];
+            $('#indicator_display_line_'+indicator_log_id).text(indicator_display_line);
+            $('#line_settings_modal_close_btn').click();
+            //console.log(indicator_display_line,indicator_log_id);
+            update_dropdowns();
+          }else{
+            console.log(response);
+          }
+      });
+    });
+
+    function validate_alert_form(){
+      return true;
+    }
+
+    // finally save alert
+    $("#create_alert_form").on("submit", function(event){
+      event.preventDefault();
+      if(validate_alert_form()){
+
+      }else{
+        
+      }
+      $.ajax({
+        url : '/update_alert/',
+        type: "POST",
+        data : $("#create_alert_form").serialize(),
+        timeout: 600000,
+      }).done(function(response){
+          if(response["status"] == "success"){
+            window.location.href = '/';
+          }else{
+           //console.log(response)
+           alert("some error occured while saving") 
+          }
+      });
+    })
+    update_dropdowns(condition_on_startup());
+    
+  });
+</script>
+</body>
+
+</html>

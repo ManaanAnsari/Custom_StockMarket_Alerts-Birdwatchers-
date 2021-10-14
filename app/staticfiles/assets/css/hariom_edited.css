@@ -1,0 +1,118 @@
+/* *{
+	margin:0px;
+	padding:0px;
+	box-sizing: border-box;
+}
+.condition_main{
+	margin:20px 0px 0px 0px;
+	padding:4% 10% 3% 10%;
+	box-sizing: border-box;
+	height:auto;
+	width:100%;
+	border: 10px solid #171792c4;
+	color: #424242;
+} */
+.condition_main p{
+	font-size: 21px;
+	width:100%;
+	line-height: 2.5;
+}
+.condition_main p select{
+	border: none;
+	outline: none;
+	border-bottom: 2px dotted grey;
+	text-align: center;
+	text-align-last:center;
+	cursor: pointer;
+	width:20%;
+	outline: none;
+}
+p input[type="text"], p input[type="date"]{
+	border:0px;
+	border-bottom: 2px dotted grey;
+	outline: none;
+	text-align: center;
+	cursor: pointer;
+	width:35%;
+}
+p #search-result{
+	display: none;
+}
+span textarea{
+	height:70px;
+	margin-left: 5%;
+	text-align: center;
+	line-height: 1.5;
+	outline:none;
+	width:35%;
+}
+.condition_main input[type="button"]{
+	font-size: 19px;
+	height:45px;
+	line-height: 53px;
+	text-align: center;
+	width:17%;
+	border:none;
+	cursor: pointer;
+	background-color:#171792c4;
+	color: white;
+	border-radius: 25px;
+	font-family: Gautami;
+	outline: none;
+	margin-left: 80px;
+}
+.condition_main input[type="button"]:hover{
+	background-color: white;
+	color: #171792c4;
+	border:1px solid #171792c4;
+}
+.condition_main p select, p input[type="text"], p input[type="date"], span textarea{
+	color:#8500ff;
+	font-family:verdana;
+	font-size:18px;
+}
+p input[type="text"]{
+	margin-left: 70px;
+}
+p input[type="date"]{
+	margin-left: 60px;
+}
+span textarea{
+	margin-left: 17px;
+}
+.tbl{
+	margin-top: 20px;
+	text-align: center;
+}
+.tbl select{
+	cursor: pointer;
+}
+.tbl p{
+	font-size: 17px;
+	line-height: -2;
+	margin:0px;
+}
+.tbl th{
+	text-align: center;
+}
+@media (max-width: 863px) {
+	.condition_main{
+		margin:100px 0px 0px 0px;
+		padding:12% 0 10% 0;
+		text-align: center;
+	}
+	.condition_main p{
+		font-size: 23px;
+		line-height: 2.5;
+		text-align: center;
+		width:255px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	.condition_main p select, p input[type="text"], p input[type="date"], span textarea{
+		width:100%;
+	}
+	p input[type="text"], p input[type="date"], span textarea, .condition_main input[type="button"]{
+		margin-left: 0px;
+	}
+}
